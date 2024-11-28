@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - ${LOCAL_DB_PORT:-5432}:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Для постоянного хранения данных
+
+#  app:
+#    build:
+#      context: .
+#      dockerfile: ./back/Dockerfile  # Укажите путь к вашему Dockerfile
+#    env_file:
+#      - .env
+#    depends_on:
+#      - db
+#    ports:
+#      - "8000:8000"  # Порт, на котором будет работать ваше FastAPI приложение
+#    volumes:
+#      - .:/app  # Монтируем текущую директорию в контейнер
+
+volumes:
+  postgres-data:  # Объявляем том для хранения данных базы данных
+

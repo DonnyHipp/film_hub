@@ -1,0 +1,6 @@
+/back/.venv/
+*.env*
+*.ENV*
+*.local.env*
+
+*.idea*
