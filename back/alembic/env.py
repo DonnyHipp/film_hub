@@ -6,8 +6,8 @@ from sqlalchemy import pool
 from alembic import context
 
 from config.db import Base
-from models import * # noqa
-from config.settings import get_main_db_url
+from src.models import *  # noqa
+from config.settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +18,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", get_main_db_url() + "?async_fallback=true")
+
+config.set_main_option("sqlalchemy.url", settings.get_main_db_url() + "?async_fallback=true")
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -70,9 +71,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

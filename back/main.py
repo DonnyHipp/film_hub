@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from src.auth.router import auth_router
+from src.api.auth.router import auth_router
 
 app = FastAPI()
 

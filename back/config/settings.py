@@ -1,27 +1,35 @@
 import os
+from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
-load_dotenv()
-
-
-DB_USER: Optional[str] = os.getenv("DB_USER")
-DB_PASSWORD: Optional[str] = os.getenv("DB_PASSWORD")
-DB_NAME: Optional[str] = os.getenv("DB_NAME")
-DB_HOST: Optional[str] = os.getenv("DB_HOST")
-DB_PORT: Optional[str] = os.getenv("DB_PORT")
-ENV_STATE: Optional[str] = os.getenv("ENV_STATE", "dev")
-
-LOCAL_DB_PORT: Optional[str] = os.getenv("LOCAL_DB_PORT")
-
-bd_port: Optional[str] = DB_PORT
-
-if ENV_STATE == "dev":
-    bd_port = LOCAL_DB_PORT
+BASE_DIR = Path(__file__).parent.parent
 
 
-def get_main_db_url() -> str:
-    return f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{bd_port}/{DB_NAME}"
+class Settings(BaseSettings):
+    db_user: str
+    db_password: str
+    db_name: str
+    db_host: str
+    db_port: int
+    local_db_port: str
+    env_state: Optional[str] = Field("dev")
+
+    class Config:
+        env_file = os.path.join(BASE_DIR.parent, ".env")
+        case_sensitive = False
+
+    @property
+    def effective_db_port(self) -> str:
+        return self.local_db_port if self.env_state == "dev" else self.db_port
+
+    def get_main_db_url(self, mode: str = "+asyncpg") -> str:
+        return f"postgresql{mode}://{self.db_user}:{self.db_password}@{self.db_host}:{self.effective_db_port}/{self.db_name}"
+
+    def get_sync_db_url(self) -> str:
+        return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.effective_db_port}/{self.db_name}"
 
 
+settings = Settings()
